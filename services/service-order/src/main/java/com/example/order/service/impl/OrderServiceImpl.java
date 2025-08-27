@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.example.order.bean.Order;
+import com.example.order.feign.ProductFeignClient;
 import com.example.order.service.OrderService;
 import com.example.product.bean.Product;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +28,14 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     LoadBalancerClient loadBalancerClient;
 
+    @Autowired
+    ProductFeignClient productFeignClient;
+
     @Override
     public Order createOrder(Long productId, Long userId) {
-        Product product = getProductFromRemoteWithLoadBalancerAnnotation(productId);
+//        Product product = getProductFromRemoteWithLoadBalancerAnnotation(productId);
+
+        Product product = productFeignClient.getProductById(productId);
         Order order = new Order();
         order.setId(1L);
         // 远程调用计算总金额
