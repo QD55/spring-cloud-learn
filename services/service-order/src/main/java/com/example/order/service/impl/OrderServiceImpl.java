@@ -3,6 +3,8 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.alibaba.csp.sentinel.slots.block.BlockException;
 import com.example.order.bean.Order;
 import com.example.order.feign.ProductFeignClient;
 import com.example.order.service.OrderService;
@@ -31,6 +33,7 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     ProductFeignClient productFeignClient;
 
+    @SentinelResource(value = "createOrder", blockHandler = "createOrderFallback")
     @Override
     public Order createOrder(Long productId, Long userId) {
 //        Product product = getProductFromRemoteWithLoadBalancerAnnotation(productId);
@@ -41,11 +44,20 @@ public class OrderServiceImpl implements OrderService {
         // 远程调用计算总金额
         order.setTotalAmount(product.getPrice().multiply(BigDecimal.valueOf(product.getNum())));
         order.setUserId(userId);
-        order.setNickName("zhangsan");
+        order.setNickName("niko");
         order.setAddress("尚硅谷");
         // 远程调用查询商品列表
         order.setProductList(List.of(product));
 
+        return order;
+    }
+
+    public Order createOrderFallback(Long productId, Long userId, BlockException e) {
+        Order order = new Order();
+        order.setId(1L);
+        order.setUserId(userId);
+        order.setNickName("未知用户");
+        order.setAddress("异常信息: " + e.getClass());
         return order;
     }
 
